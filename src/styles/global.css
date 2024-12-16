@@ -1,0 +1,58 @@
+/* $yekanBakhPath and $iranSansPath define in Variables file */
+@font-face {
+    font-family: "ir";
+    src: url("../assets/fonts/IRANSans/eot/IRANSansWeb.eot") format("embedded-opentype"),
+    url("../assets/fonts/IRANSans/ttf/IRANSansWeb.ttf") format("truetype"),
+    url("../assets/fonts/IRANSans/woff/IRANSansWeb.woff") format("woff"),
+    url("../assets/fonts/IRANSans/woff2/IRANSansWeb.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "ir-black";
+    src: url("../assets/fonts/IRANSans/eot/IRANSansWeb_Black.eot") format("embedded-opentype"),
+    url("../assets/fonts/IRANSans/ttf/IRANSansWeb_Black.ttf") format("truetype"),
+    url("../assets/fonts/IRANSans/woff/IRANSansWeb_Black.woff") format("woff"),
+    url("../assets/fonts/IRANSans/woff2/IRANSansWeb_Black.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "ir-bold";
+    src: url("../assets/fonts/IRANSans/eot/IRANSansWeb_Bold.eot") format("embedded-opentype"),
+    url("../assets/fonts/IRANSans/ttf/IRANSansWeb_Bold.ttf") format("truetype"),
+    url("../assets/fonts/IRANSans/woff/IRANSansWeb_Bold.woff") format("woff"),
+    url("../assets/fonts/IRANSans/woff2/IRANSansWeb_Bold.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "ir-light";
+    src: url("../assets/fonts/IRANSans/eot/IRANSansWeb_Light.eot") format("embedded-opentype"),
+    url("../assets/fonts/IRANSans/ttf/IRANSansWeb_Light.ttf") format("truetype"),
+    url("../assets/fonts/IRANSans/woff/IRANSansWeb_Light.woff") format("woff"),
+    url("../assets/fonts/IRANSans/woff2/IRANSansWeb_Light.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "ir-medium";
+    src: url("../assets/fonts/IRANSans/eot/IRANSansWeb_Medium.eot") format("embedded-opentype"),
+    url("../assets/fonts/IRANSans/ttf/IRANSansWeb_Medium.ttf") format("truetype"),
+    url("../assets/fonts/IRANSans/woff/IRANSansWeb_Medium.woff") format("woff"),
+    url("../assets/fonts/IRANSans/woff2/IRANSansWeb_Medium.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "ir-ulight";
+    src: url("../assets/fonts/IRANSans/eot/IRANSansWeb_UltraLight.eot") format("embedded-opentype"),
+    url("../assets/fonts/IRANSans/ttf/IRANSansWeb_UltraLight.ttf") format("truetype"),
+    url("../assets/fonts/IRANSans/woff/IRANSansWeb_UltraLight.woff") format("woff"),
+    url("../assets/fonts/IRANSans/woff2/IRANSansWeb_UltraLight.woff2") format("woff2");
+}
+
+html,
+body {
+    font-family: "ir";
+}
+
+a {
+    text-decoration: none;
+    color: black;
+}
