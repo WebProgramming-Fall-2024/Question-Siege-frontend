@@ -6,7 +6,7 @@ export function User() {
     const [users, setUsers] = useState([]); // State to store users fetched from the API
     const [loading, setLoading] = useState(true); // Loading state
 
-    // Fetch users on component mount
+    // Fetch users on components mount
     useEffect(() => {
         const fetchUsers = async () => {
             try {
