@@ -3,6 +3,27 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 export function User() {
+    function sortUser() {
+        const selectedFilter = document.getElementById("category_filter").value;
+
+        let sortedUsers = [...users]; // Copy the users array
+        console.log(selectedFilter)
+        switch (selectedFilter) {
+            case "نام":
+                sortedUsers.sort((a, b) => a.username.localeCompare(b.username, "fa"));
+                break;
+            case "امتیاز":
+                sortedUsers.sort((a, b) => b.score - a.score);
+                break;
+            case "تعداد سوال طرح شده":
+                sortedUsers.sort((a, b) => b.designedQuestions - a.designedQuestions);
+                break;
+            default:
+                break;
+        }
+
+        setUsers(sortedUsers); // Update state with the sorted data
+    }
     const [users, setUsers] = useState([]); // State to store users fetched from the API
     const [loading, setLoading] = useState(true); // Loading state
 
@@ -31,16 +52,7 @@ export function User() {
             <div className="my-4 mx-3 d-flex flex-column justify-content-between" style={{ direction: "rtl" }}>
                 <div className="collapse" id="navbarToggleExternalContent">
                     <div className="p-4 row justify-content-around">
-                        <div className="col-md-5">
-                            <label htmlFor="category_search" className="my-2 fw-bolder">نام بازیکن</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                id="category_search"
-                                placeholder="نام بازیکن را وارد کنید"
-                                autoComplete="off"
-                            />
-                        </div>
+
                         <div className="col-md-5">
                             <label htmlFor="category_filter" className="my-2 fw-bolder">فیلتر</label>
                             <select className="form-control" id="category_filter">
@@ -51,7 +63,7 @@ export function User() {
                             </select>
                         </div>
                         <div className="mt-2 d-flex justify-content-end">
-                            <button className="btn btn-outline-primary">اعمال تغییرات</button>
+                            <button className="btn btn-outline-primary" onClick={sortUser}>اعمال تغییرات</button>
                         </div>
                     </div>
                 </div>
@@ -129,3 +141,4 @@ export function User() {
         </div>
     );
 }
+

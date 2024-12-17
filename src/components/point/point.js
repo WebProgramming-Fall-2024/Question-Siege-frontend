@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {Link} from "react-router-dom";
 
 export function Point() {
     const [pointsData, setPointsData] = useState([]); // State to hold API data
@@ -67,7 +68,7 @@ export function Point() {
                     <nav className="navbar">
                         <div className="container-fluid d-flex justify-content-end">
                             <button
-                                className="btn btn-outline-success"
+                                className="btn btn-outline-success d-none"
                                 type="button"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#navbarToggleExternalContent"
@@ -104,6 +105,8 @@ function PointsTable({ data }) {
                 <th className="px-4" style={{ whiteSpace: "nowrap" }}>امتیاز</th>
                 <th className="px-4" style={{ whiteSpace: "nowrap" }}>#سوال طراحی شده</th>
                 <th className="px-4" style={{ whiteSpace: "nowrap" }}>#سوال حل شده</th>
+                <th className="px-4" style={{ whiteSpace: "nowrap" }}>جزییات</th>
+
             </tr>
             </thead>
             <tbody>
@@ -123,6 +126,29 @@ function TableRow({ user, index }) {
             <td>{user.score}</td>
             <td>{user.designedQuestions}</td>
             <td>{user.answeredQuestions}</td>
+            <td>
+                <div className="dropdown">
+                    <button
+                        className="btn dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                    >
+                        <i className="icon-cog6"></i>
+                    </button>
+                    <ul className="dropdown-menu">
+                        <div className="d-flex justify-content-center">
+                            <Link
+                                to={`../profile?name=${user.username}`}
+                                className="mx-auto align-self-center"
+                            >
+                                جزییات
+                            </Link>
+                        </div>
+                    </ul>
+                </div>
+            </td>
+
         </tr>
     );
 }

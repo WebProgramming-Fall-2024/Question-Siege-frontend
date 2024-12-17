@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom";
+import {Link, useLocation} from "react-router-dom";
 import Modal from "react-bootstrap/Modal";
 import {useState} from "react";
 import {showToast} from "../../lib/utility";
@@ -7,6 +7,10 @@ export function Question(){
     let data = ['item1','item2','item3','item4']
     const [modalShow, setModalShow] = useState(false);
     const [modalShow2, setModalShow2] = useState(false);
+    const location = useLocation();
+    const query = new URLSearchParams(location.search);
+    const category = query.get("category");
+    console.log(category)
     // todo api for get question this user
     return(
         <div>
@@ -40,7 +44,6 @@ export function Question(){
                         <div className="container-fluid">
                             <button className="btn btn-outline-primary" onClick={()=>{setModalShow2(true);}}>افزودن سوال</button>
 
-                            <Link className="btn btn-outline-primary mx-3" to="/category">افزودن دسته بندی</Link>
 
                         </div>
                     </nav>
@@ -65,8 +68,6 @@ export function Question(){
                         <th className="px-4" style={{whiteSpace: 'nowrap'}}>تگ</th>
                         <th className="px-4" style={{whiteSpace: 'nowrap'}}>تاریخ</th>
                         <th className="px-4" style={{whiteSpace: 'nowrap'}}>عملیات</th>
-
-
                     </tr>
                     </thead>
                     <tbody>
@@ -200,27 +201,10 @@ function MyVerticallyCenteredModal2(props) {
 
                                 <select className="form-select" aria-label="Default select example">
                                     <option selected>انتخاب کنید</option>
-                                    <option value="1">۱</option>
-                                    <option value="2">۲</option>
-                                    <option value="3">۳</option>
-                                    <option value="4">۴</option>
-                                    <option value="5">۵</option>
-                                </select>
+                                    <option value="easy">آسان</option>
+                                    <option value="medium">متوسط</option>
+                                    <option value="hard">سخت</option>
 
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-lg-6">
-                        <div className="form-group">
-                            <label className="font-weight-bold">دسته بندی سوال<span className="text-danger"> *
-										</span></label>
-                            <div className="input-group mb-2 mr-sm-2">
-
-                                <select className="form-select" aria-label="Default select example">
-                                    <option selected>انتخاب کنید</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
                                 </select>
 
                             </div>
@@ -271,7 +255,7 @@ function MyVerticallyCenteredModal2(props) {
                             </div>
                         </div>
                     </div>
-                    <div className="col-lg-12">
+                    <div className="col-lg-12 d-none">
                         <div className="row align-items-end">
                             <div className="form-group col-9">
                                 <label className="font-weight-bold">تگ<span className="text-danger"> *
@@ -286,7 +270,7 @@ function MyVerticallyCenteredModal2(props) {
                         </div>
 
                     </div>
-                    <div className="col-12 row ">
+                    <div className="col-12 row d-none">
                         {tags.map((item,index) => {
                             return( <div className="col-3 my-1 mx-1 py-2 text-center" style={{border: "1px solid #c5c5c5",borderRadius: "10px"}}>{item}</div>
                             )

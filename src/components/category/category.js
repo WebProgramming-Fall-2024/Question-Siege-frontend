@@ -11,7 +11,7 @@ export function Category(){
         <div>
             <div className="my-4 mx-3 d-flex flex-column justify-content-between" style={{direction: 'rtl'}}>
                 <div className="collapse" id="navbarToggleExternalContent">
-                    <div className="p-4 row justify-content-around">
+                    <div className="p-4 row justify-content-around d-none">
                         <div className="col-md-5">
                             <label htmlFor="category_search" className="my-2 fw-bolder">نام دسته بندی</label>
                             <input type="text" className="form-control" id="category_search" placeholder="نام دسته بندی مورد نظر خود را وارد کنید" autoComplete="off"/>
@@ -37,15 +37,15 @@ export function Category(){
                 <div className="d-flex justify-content-between">
                     <nav className="navbar">
                         <div className="container-fluid">
-                            <button className="btn btn-outline-primary" onClick={()=>{setModalShow(true)}}>افزودن دسته بندی</button>
-                            <Link className="btn btn-outline-primary mx-3" to="/question">افزودن سوال</Link>
+                            <button className="d-none btn btn-outline-primary" onClick={()=>{setModalShow(true)}}>افزودن دسته بندی</button>
+                            <Link className= "d-none btn btn-outline-primary mx-3" to="/question">افزودن سوال</Link>
 
                         </div>
                     </nav>
 
                     <nav className="navbar">
                         <div className="container-fluid">
-                            <button className="btn btn-outline-success" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+                            <button className="d-none btn btn-outline-success" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
                                 جستجو
                             </button>
                         </div>
@@ -74,7 +74,7 @@ function table_category_items(){
                 <th className="px-4" style={{whiteSpace: 'nowrap'}}>نام دسته بندی</th>
                 <th className="px-4" style={{whiteSpace: 'nowrap'}}>تعداد سوال</th>
 
-                <th className="px-4" style={{whiteSpace: 'nowrap'}}>تاریخ</th>
+                <th className="px-4" style={{whiteSpace: 'nowrap'}}>عملیات</th>
 
 
             </tr>
@@ -94,8 +94,20 @@ function one_row_category_item(item,index){
             <th>{index+1}</th>
             <td>فوتبال</td>
             <td>۲</td>
-            <td>۱۳۹۷/۱۲/۱۲</td>
-        </tr>
+            <td >
+                <div className="dropdown">
+                    <button className="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i className="icon-cog6"></i>
+
+                    </button>
+                    <ul className="dropdown-menu">
+                        <li className="text-center">
+                            <Link to='/question?category=folan'>جزییات</Link>
+                        </li>
+
+                    </ul>
+                </div>
+            </td>        </tr>
 
     )
 }

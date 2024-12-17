@@ -60,7 +60,7 @@ export function Home() {
                         </Link>
                         <Link
                             className="col-5 btn btn-outline-primary py-2 my-2 d-flex align-items-center justify-content-center"
-                            to="/question"
+                            to="/category"
                         >
                             سوال جدید
                         </Link>
