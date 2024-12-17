@@ -1,83 +1,128 @@
-export function Point(){
-    return(
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+export function Point() {
+    const [pointsData, setPointsData] = useState([]); // State to hold API data
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPointsData = async () => {
+            try {
+                const token = localStorage.getItem("login_token"); // Retrieve token
+                if (!token) {
+                    console.error("No token found. Please log in.");
+                    setLoading(false);
+                    return;
+                }
+
+                const response = await axios.get("http://localhost:5000/api/users/sorted-by-score", {
+                    headers: {
+                        Authorization: token, // Include token in headers
+                    },
+                });
+                setPointsData(response.data); // Store API response
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching points data:", error);
+                setLoading(false);
+            }
+        };
+
+        fetchPointsData();
+    }, []);
+
+
+    return (
         <div>
-            <div className="my-4 mx-3 d-flex flex-column justify-content-between" style={{direction: 'rtl'}}>
+            {/* Search Section */}
+            <div className="my-4 mx-3 d-flex flex-column justify-content-between" style={{ direction: "rtl" }}>
                 <div className="collapse" id="navbarToggleExternalContent">
                     <div className="p-4 row justify-content-around">
                         <div className="col-md-5">
-                            <label htmlFor="category_search" className="my-2 fw-bolder">نام دسته بندی</label>
-                            <input type="text" className="form-control" id="category_search" placeholder="نام دسته بندی مورد نظر خود را وارد کنید" autoComplete="off" />
-
+                            <label htmlFor="category_search" className="my-2 fw-bolder">نام بازیکن</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                id="category_search"
+                                placeholder="نام بازیکن مورد نظر خود را وارد کنید"
+                                autoComplete="off"
+                            />
                         </div>
                         <div className="col-md-5">
-                            <label htmlFor="category_search" className="my-2 fw-bolder">فیلتر</label>
-                            <select className="form-control">
+                            <label htmlFor="category_filter" className="my-2 fw-bolder">فیلتر</label>
+                            <select className="form-control" id="category_filter">
                                 <option>انتخاب کنید</option>
                                 <option>نام</option>
                                 <option>امتیاز</option>
-                                <option>تعداد سوال</option>
-
-
+                                <option>#سوال طراحی شده</option>
+                                <option>#سوال حل شده</option>
                             </select>
                         </div>
                         <div className="mt-2 d-flex justify-content-end">
                             <button className="btn btn-outline-primary">اعمال تغییرات</button>
-
                         </div>
-
                     </div>
                 </div>
                 <div className="d-flex justify-content-end">
-
-
                     <nav className="navbar">
                         <div className="container-fluid d-flex justify-content-end">
-                            <button className="btn btn-outline-success" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+                            <button
+                                className="btn btn-outline-success"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#navbarToggleExternalContent"
+                                aria-controls="navbarToggleExternalContent"
+                                aria-expanded="false"
+                                aria-label="Toggle navigation"
+                            >
                                 جستجو
                             </button>
                         </div>
                     </nav>
                 </div>
-
             </div>
-            <div className="mx-5 text-center" style={{overflowX:'auto',direction: 'rtl'}}>
-                {table_points_items()}
+
+            {/* Points Table */}
+            <div className="mx-5 text-center" style={{ overflowX: "auto", direction: "rtl" }}>
+                {loading ? (
+                    <div>در حال بارگذاری...</div>
+                ) : (
+                    <PointsTable data={pointsData} />
+                )}
             </div>
         </div>
-    )
+    );
 }
-function table_points_items(){
-    // todo api for get user sorted by point
-    let data = ['item1','item2','item3','item4']
-    return(
-        <table className="table table-hover" >
-            <thead className="table-primary" >
+
+function PointsTable({ data }) {
+    return (
+        <table className="table table-hover">
+            <thead className="table-primary">
             <tr>
-                <th className="px-4" style={{whiteSpace: 'nowrap'}}>#</th>
-                <th className="px-4" style={{whiteSpace: 'nowrap'}}>نام بازیکن</th>
-                <th className="px-4" style={{whiteSpace: 'nowrap'}}>امتیاز</th>
-                <th className="px-4" style={{whiteSpace: 'nowrap'}}>تعداد سوال</th>
-
-
+                <th className="px-4" style={{ whiteSpace: "nowrap" }}>#</th>
+                <th className="px-4" style={{ whiteSpace: "nowrap" }}>نام بازیکن</th>
+                <th className="px-4" style={{ whiteSpace: "nowrap" }}>امتیاز</th>
+                <th className="px-4" style={{ whiteSpace: "nowrap" }}>#سوال طراحی شده</th>
+                <th className="px-4" style={{ whiteSpace: "nowrap" }}>#سوال حل شده</th>
             </tr>
             </thead>
             <tbody>
-            {data.map((item,index) => {return  one_row_point_item(item,index)})}
-
+            {data.map((user, index) => (
+                <TableRow key={index} user={user} index={index} />
+            ))}
             </tbody>
         </table>
-    )
+    );
 }
-function one_row_point_item(item,index){
 
-    return(
-
+function TableRow({ user, index }) {
+    return (
         <tr>
-            <th>{index+1}</th>
-            <td>مهرشاد برزمینی</td>
-            <td>۳۴</td>
-            <td>۶۰</td>
+            <th>{index + 1}</th>
+            <td>{user.username}</td>
+            <td>{user.score}</td>
+            <td>{user.designedQuestions}</td>
+            <td>{user.answeredQuestions}</td>
         </tr>
-
-    )
+    );
 }
