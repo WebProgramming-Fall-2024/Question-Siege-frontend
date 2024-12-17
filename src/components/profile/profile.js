@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Modal from "react-bootstrap/Modal";
+import {showSwalMessage} from "../../lib/utility";
 
 export function Profile() {
     const location = useLocation();
@@ -156,6 +157,38 @@ export function Profile() {
     );
 
     function follow() {
-        console.log("Follow function not implemented.");
+        const token = localStorage.getItem("login_token"); // Retrieve token
+
+        if (!token) {
+            showSwalMessage("لطفا ابتدا وارد حساب کاربری خود شوید.", "error");
+            return;
+        }
+
+        axios
+            .post(
+                "http://localhost:5000/api/users/follow",
+                { username: profile.username }, // Body payload
+                {
+                    headers: { Authorization: token }, // Add Authorization header
+                }
+            )
+            .then(() => {
+                showSwalMessage(`شما اکنون ${profile.username} را دنبال می‌کنید!`, "success", false, 3000);
+            })
+            .catch((error) => {
+                console.error("Error following user:", error);
+                const status = error.response?.status;
+
+                if (status === 401) {
+                    showSwalMessage("دسترسی غیرمجاز. لطفا دوباره وارد شوید.", "error");
+                } else if (status === 404) {
+                    showSwalMessage("کاربر مورد نظر یافت نشد.", "error");
+                } else if (status === 409) {
+                    showSwalMessage("شما قبلا این کاربر را دنبال کرده‌اید.", "warning");
+                } else {
+                    showSwalMessage("خطا در دنبال کردن کاربر. لطفا دوباره تلاش کنید.", "error");
+                }
+            });
     }
+
 }
