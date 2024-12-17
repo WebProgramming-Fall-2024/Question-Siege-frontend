@@ -56,3 +56,11 @@ a {
     text-decoration: none;
     color: black;
 }
+.default_answer_question{
+    border: 2px solid grey;
+    box-shadow: 2px 2px grey;
+}
+.choosen_answer_question{
+    border: 2px solid #1d47f1;
+    box-shadow: 2px 2px #1660ff;
+}

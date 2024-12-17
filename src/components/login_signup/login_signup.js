@@ -69,14 +69,17 @@ export function Login_signup(){
                 phone_number: mobile,
             });
 
-            const token = response.data.token;
-            dispatch({
-                type: 'changed',
-                id: 0,
-                token,
-            });
-            localStorage.setItem("login_token", token);
+
             showSwalMessage('عملیات موفقیت آمیز بود', 'success', false, 3000);
+            setTimeout(()=>{
+                const token = response.data.token;
+                dispatch({
+                    type: 'changed',
+                    id: 0,
+                    token,
+                });
+                localStorage.setItem("login_token", token);
+            },3000)
         } catch (error) {
             console.error(error);
             const errorMsg = error.response?.data?.error || 'مشکلی پیش آمده است';
