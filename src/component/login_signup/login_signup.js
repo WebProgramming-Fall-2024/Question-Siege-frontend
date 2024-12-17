@@ -3,6 +3,8 @@ import {checkMobile,checkUsername,toEnglish,showToast,showSwalMessage} from '../
 import './index.css'
 import {useTasks} from "../TaskContext/TasksContext";
 import {useTasksDispatch} from "../TaskContext/TasksContext.js";
+import axios from 'axios';
+
 
 function event_eye(e){
     var x = e.target.parentNode.parentNode.querySelector("input");
@@ -37,7 +39,7 @@ export function Login_signup(){
         document.querySelector("i#login_eye").classList.add("icon-eye");
         setPage(prevStatus => !prevStatus);
     };
-    function send_data(){
+    async function send_data(){
 
         let status = status_page?'signup':'login';
         let mobile = document.querySelector("#phone_login").value
@@ -50,31 +52,35 @@ export function Login_signup(){
             return
         }
         if (!checkUsername(username)){
-            showSwalMessage('نام کاربری حداقل باید ۸ حرف از حروف انگلیسی باشد.')
+            showSwalMessage('نام کاربری حداقل باید ۴ حرف از حروف انگلیسی باشد.')
             return;
         }
         if (password.trim().length == 0){
             showSwalMessage('لطفا رمز عبور خود را وارد کنید.')
             return;
         }
-        if (status == 'login'){
-            // todo: api for login
+
+        // API Request
+        const endpoint = `${process.env.REACT_APP_API_URL}/users/${status}`;
+        try {
+            const response = await axios.post(endpoint, {
+                username,
+                password,
+                phone_number: mobile,
+            });
+
+            const token = response.data.token;
             dispatch({
                 type: 'changed',
                 id: 0,
-                token: 'salam',
+                token,
             });
-            localStorage.setItem("login_token","32442")
-
-
-        } else {
-            // todo: api for sign up
-            dispatch({
-                type: 'changed',
-                id: 0,
-                token: 'salam',
-            });
-            localStorage.setItem("login_token","32442")
+            localStorage.setItem("login_token", token);
+            showSwalMessage('عملیات موفقیت آمیز بود', 'success', false, 3000);
+        } catch (error) {
+            console.error(error);
+            const errorMsg = error.response?.data?.error || 'مشکلی پیش آمده است';
+            showSwalMessage(errorMsg, 'error');
         }
 
     }

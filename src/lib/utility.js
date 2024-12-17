@@ -54,7 +54,7 @@ export function checkMobile(text) {
     return mobileRegex.test(text)
 }
 export function checkUsername(text) {
-    let usernameRegex = /^[a-z0-9_]{7}[a-z0-9_]+$/;
+    let usernameRegex = /^[A-Za-z0-9_]{3}[A-Za-z0-9_]+$/;
     return usernameRegex.test(text)
 }
 export function toEnglish(number) {
