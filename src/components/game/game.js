@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { showSwalMessage } from "../../lib/utility";
+import {useEffect, useState} from "react";
+import {showSwalMessage} from "../../lib/utility";
 import axios from "axios";
 
 export function Game() {
@@ -12,16 +12,18 @@ export function Game() {
     const [results, setResults] = useState(null); // Final game results
     const [loading, setLoading] = useState(false); // Loading state
     const [gameId, setGameId] = useState(null); // Track game session ID
+    const [highlightedAnswer, setHighlightedAnswer] = useState(null); // Highlighted answers for correct/incorrect feedback
+    const [answeredQuestions, setAnsweredQuestions] = useState([]); // List of answered questions
 
     // Fetch categories when component loads
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const token = localStorage.getItem("login_token"); // Retrieve token
+                const token = localStorage.getItem("login_token");
                 const response = await axios.get("http://localhost:5000/api/category", {
-                    headers: { Authorization: token },
+                    headers: {Authorization: token},
                 });
-                setCategories(response.data); // Set fetched categories
+                setCategories(response.data);
             } catch (error) {
                 console.error("Error fetching categories:", error);
                 showSwalMessage("خطا در دریافت دسته بندی‌ها.", "error");
@@ -32,7 +34,7 @@ export function Game() {
 
     // Start Game
     const startGame = async () => {
-        if (selectedCategories.length === 0 && selectedCategories !== "random") {
+        if (selectedCategories.length === 0 && !selectedCategories.includes("random")) {
             showSwalMessage("لطفا دسته بندی یا شانسی را انتخاب کنید.", "warning");
             return;
         }
@@ -43,6 +45,7 @@ export function Game() {
         setSelectedOption(null);
         setChoices([]);
         setQuestion("");
+        setAnsweredQuestions([]);
 
         const payload = {
             mode: selectedCategories.includes("random") ? "random" : "category",
@@ -54,9 +57,9 @@ export function Game() {
             const response = await axios.post(
                 `${process.env.REACT_APP_API_URL}/game/start`,
                 payload,
-                { headers: { Authorization: token } }
+                {headers: {Authorization: token}}
             );
-            setGameId(response.data.gameId); // Save game session ID
+            setGameId(response.data.gameId);
             setQuestion(response.data.question);
             setChoices(response.data.question.options);
         } catch (error) {
@@ -79,18 +82,40 @@ export function Game() {
             const token = localStorage.getItem("login_token");
             const response = await axios.post(
                 `${process.env.REACT_APP_API_URL}/game/answer`,
-                { gameId, questionId: question.id, answer: selectedOption },
-                { headers: { Authorization: token } }
+                {gameId, questionId: question.id, answer: selectedOption},
+                {headers: {Authorization: token}}
             );
 
-            if (response.data.nextQuestion) {
-                setQuestion(response.data.nextQuestion);
-                setChoices(response.data.nextQuestion.options);
-                setSelectedOption(null);
-            } else {
-                setResults({ message: "بازی تمام شد", score: response.data.currentScore });
-                setGameStarted(false);
-            }
+            // Highlight answers
+            setHighlightedAnswer({
+                correct: response.data.isCorrect ? selectedOption : question.correctAnswer,
+                incorrect: !response.data.isCorrect ? selectedOption : null,
+            });
+
+            // Update answered questions list
+            setAnsweredQuestions((prev) => [
+                ...prev,
+                {
+                    question: question.text,
+                    selectedAnswer: selectedOption,
+                    correctAnswer: question.correctAnswer,
+                    isCorrect: response.data.isCorrect,
+                    score: response.data.currentScore,
+                },
+            ]);
+
+            // Wait for 1 second before loading the next question
+            setTimeout(() => {
+                if (response.data.nextQuestion) {
+                    setQuestion(response.data.nextQuestion);
+                    setChoices(response.data.nextQuestion.options);
+                    setSelectedOption(null);
+                    setHighlightedAnswer(null);
+                } else {
+                    setResults({message: "بازی تمام شد", score: response.data.currentScore});
+                    setGameStarted(false);
+                }
+            }, 1000);
         } catch (error) {
             console.error("Error submitting answer:", error);
             showSwalMessage("خطا در ارسال پاسخ.", "error");
@@ -103,11 +128,15 @@ export function Game() {
             const token = localStorage.getItem("login_token");
             const response = await axios.post(
                 `${process.env.REACT_APP_API_URL}/game/end`,
-                { gameId },
-                { headers: { Authorization: token } }
+                {gameId},
+                {headers: {Authorization: token}}
             );
 
-            setResults({ message: "بازی متوقف شد", finalScore: response.data.finalScore });
+            setResults({
+                message: "بازی متوقف شد",
+                finalScore: response.data.finalScore,
+                answeredQuestions,
+            });
             setGameStarted(false);
         } catch (error) {
             console.error("Error stopping the game:", error);
@@ -129,7 +158,7 @@ export function Game() {
                             className="form-select mb-3"
                             value={selectedCategories}
                             onChange={(e) =>
-                                setSelectedCategories([...e.target.options].filter(o => o.selected).map(o => o.value))
+                                setSelectedCategories([...e.target.options].filter((o) => o.selected).map((o) => o.value))
                             }
                         >
                             <option value="random">شانسی</option>
@@ -164,11 +193,15 @@ export function Game() {
                                 key={index}
                                 onClick={() => setSelectedOption(choice)}
                                 className={`w-100 text-end px-2 py-4 my-2 ${
-                                    selectedOption === choice
-                                        ? "border border-success text-success"
-                                        : "border border-secondary"
+                                    highlightedAnswer?.correct === choice
+                                        ? "bg-success text-white"
+                                        : highlightedAnswer?.incorrect === choice
+                                            ? "bg-danger text-white"
+                                            : selectedOption === choice
+                                                ? "border border-primary bg-light"
+                                                : "border border-secondary"
                                 }`}
-                                style={{ borderRadius: "10px", cursor: "pointer" }}
+                                style={{borderRadius: "10px", cursor: "pointer"}}
                             >
                                 {choice}
                             </div>
@@ -189,7 +222,37 @@ export function Game() {
             {results && (
                 <div className="mt-4">
                     <h4>نتایج بازی</h4>
-                    <p>{results.message || `امتیاز نهایی: ${results.finalScore || results.score}`}</p>
+                    <p className="fw-bold">
+                        امتیاز کل بازی: <span className="text-success">{results.finalScore}</span>
+                    </p>
+                    <table className="table table-hover text-center mt-3">
+                        <thead className="table-primary">
+                        <tr>
+                            <th>#</th>
+                            <th>سوال</th>
+                            <th>جواب انتخابی</th>
+                            <th>جواب درست</th>
+                            <th>وضعیت</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {answeredQuestions.map((q, index) => (
+                            <tr key={index}>
+                                <td>{index + 1}</td>
+                                <td>{q.question}</td>
+                                <td>{q.selectedAnswer}</td>
+                                <td>{q.correctAnswer}</td>
+                                <td>
+                                    {q.isCorrect ? (
+                                        <span className="text-success">درست</span>
+                                    ) : (
+                                        <span className="text-danger">نادرست</span>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
         </div>
