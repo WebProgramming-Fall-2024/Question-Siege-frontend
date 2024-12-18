@@ -1,82 +1,197 @@
-import {useState} from "react";
-import {showSwalMessage} from "../../lib/utility";
+import { useEffect, useState } from "react";
+import { showSwalMessage } from "../../lib/utility";
+import axios from "axios";
 
-export function Game(){
-    const [stat, setStat] = useState(false); // State to store users fetched from the API
-    const [question, setQuestion] = useState([]); // State to store users fetched from the API
-    const [choosen, setChoosen] = useState([false,false,false,false]); // State to store users fetched from the API
+export function Game() {
+    const [gameStarted, setGameStarted] = useState(false); // Game status
+    const [question, setQuestion] = useState(""); // Current question
+    const [choices, setChoices] = useState([]); // Answer options
+    const [selectedOption, setSelectedOption] = useState(null); // Selected answer
+    const [categories, setCategories] = useState([]); // Available categories
+    const [selectedCategories, setSelectedCategories] = useState([]); // User selected categories
+    const [results, setResults] = useState(null); // Final game results
+    const [loading, setLoading] = useState(false); // Loading state
+    const [gameId, setGameId] = useState(null); // Track game session ID
 
-    function start_game(){
-    //     todo send api
-        let category_choose = document.getElementById("question_game_category").value
-        if (category_choose == '-'){
-            showSwalMessage('لطفا دسته بندی را انتخاب کنید')
-            return
+    // Fetch categories when component loads
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const token = localStorage.getItem("login_token"); // Retrieve token
+                const response = await axios.get("http://localhost:5000/api/category", {
+                    headers: { Authorization: token },
+                });
+                setCategories(response.data); // Set fetched categories
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                showSwalMessage("خطا در دریافت دسته بندی‌ها.", "error");
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    // Start Game
+    const startGame = async () => {
+        if (selectedCategories.length === 0 && selectedCategories !== "random") {
+            showSwalMessage("لطفا دسته بندی یا شانسی را انتخاب کنید.", "warning");
+            return;
         }
-        setChoosen([false,false,false,false])
-        setQuestion(['متن سوال','گزینه ۱','گزینه ۲','گزینه ۳','گزینه ۴'])
-        setStat(true)
-    }
-    function send_answer(){
-        //     todo send api
-        let send_answer = 1;
-        if ((choosen[0] || choosen[1] || choosen[2] || choosen[3]) == false){
-            showSwalMessage('ابتدا گزینه انتخاب کنید.')
-            return
+
+        setLoading(true);
+        setGameStarted(true);
+        setResults(null);
+        setSelectedOption(null);
+        setChoices([]);
+        setQuestion("");
+
+        const payload = {
+            mode: selectedCategories.includes("random") ? "random" : "category",
+            categoryIds: selectedCategories.includes("random") ? [] : selectedCategories.map(Number),
+        };
+
+        try {
+            const token = localStorage.getItem("login_token");
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/game/start`,
+                payload,
+                { headers: { Authorization: token } }
+            );
+            setGameId(response.data.gameId); // Save game session ID
+            setQuestion(response.data.question);
+            setChoices(response.data.question.options);
+        } catch (error) {
+            console.error("Error starting the game:", error);
+            showSwalMessage("خطا در شروع بازی. لطفا دوباره تلاش کنید.", "error");
+            setGameStarted(false);
+        } finally {
+            setLoading(false);
         }
-        if (choosen[0]){send_answer = 1}
-        if (choosen[1]){send_answer = 2}
-        if (choosen[2]){send_answer = 3}
-        if (choosen[3]){send_answer = 4}
+    };
 
+    // Submit Answer
+    const submitAnswer = async () => {
+        if (selectedOption === null) {
+            showSwalMessage("لطفا یک گزینه انتخاب کنید.", "warning");
+            return;
+        }
 
-        setQuestion([])
-        setStat(false)
-    }
-    return(
-        <div>
-            <div className={stat?'row flex-row-reverse mx-2 text-end d-none':'row flex-row-reverse mx-2 text-end'}>
-               <div className="col-lg-3 col-md-6">
-                    <div className="form-group">
-                        <label className="font-weight-bold">
-                            <span className="text-danger"> *
-										</span>دسته بندی سوال</label>
-                        <div className="input-group mb-2 mr-sm-2">
+        try {
+            const token = localStorage.getItem("login_token");
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/game/answer`,
+                { gameId, questionId: question.id, answer: selectedOption },
+                { headers: { Authorization: token } }
+            );
 
-                            <select id="question_game_category" className="form-select" aria-label="Default select example">
-                                <option value='-' defaultValue>انتخاب کنید</option>
-                                <option value="1">شانسی</option>
+            if (response.data.nextQuestion) {
+                setQuestion(response.data.nextQuestion);
+                setChoices(response.data.nextQuestion.options);
+                setSelectedOption(null);
+            } else {
+                setResults({ message: "بازی تمام شد", score: response.data.currentScore });
+                setGameStarted(false);
+            }
+        } catch (error) {
+            console.error("Error submitting answer:", error);
+            showSwalMessage("خطا در ارسال پاسخ.", "error");
+        }
+    };
 
-                                <option value="1">فوتبال</option>
-                                <option value="2">ورزش</option>
-                                <option value="3">زبان</option>
-                            </select>
+    // Stop Game
+    const stopGame = async () => {
+        try {
+            const token = localStorage.getItem("login_token");
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/game/end`,
+                { gameId },
+                { headers: { Authorization: token } }
+            );
 
-                        </div>
+            setResults({ message: "بازی متوقف شد", finalScore: response.data.finalScore });
+            setGameStarted(false);
+        } catch (error) {
+            console.error("Error stopping the game:", error);
+            showSwalMessage("خطا در توقف بازی.", "error");
+        }
+    };
+
+    return (
+        <div className="container mt-4 text-center">
+            {/* Category Selection */}
+            {!gameStarted && !results && (
+                <div className="row justify-content-center">
+                    <div className="col-md-6">
+                        <label className="form-label fw-bold">
+                            دسته بندی سوال <span className="text-danger">*</span>
+                        </label>
+                        <select
+                            multiple
+                            className="form-select mb-3"
+                            value={selectedCategories}
+                            onChange={(e) =>
+                                setSelectedCategories([...e.target.options].filter(o => o.selected).map(o => o.value))
+                            }
+                        >
+                            <option value="random">شانسی</option>
+                            {categories.map((cat) => (
+                                <option key={cat.id} value={cat.id}>
+                                    {cat.name}
+                                </option>
+                            ))}
+                        </select>
+                        <button className="btn btn-primary" onClick={startGame} disabled={loading}>
+                            {loading ? "در حال شروع..." : "شروع بازی"}
+                        </button>
                     </div>
                 </div>
+            )}
 
-                <div className="col-lg-3 col-md-6 d-flex justify-content-center align-items-end">
-                    <button className="btn btn-primary" onClick={start_game}>شروع بازی</button>
-
+            {/* Game Question */}
+            {gameStarted && question && (
+                <div className="mt-4">
+                    <div
+                        style={{
+                            border: "1px solid #969696",
+                            borderRadius: "10px",
+                            padding: "20px",
+                            maxWidth: "500px",
+                            margin: "auto",
+                        }}
+                    >
+                        <h4>{question.text}</h4>
+                        {choices.map((choice, index) => (
+                            <div
+                                key={index}
+                                onClick={() => setSelectedOption(choice)}
+                                className={`w-100 text-end px-2 py-4 my-2 ${
+                                    selectedOption === choice
+                                        ? "border border-success text-success"
+                                        : "border border-secondary"
+                                }`}
+                                style={{ borderRadius: "10px", cursor: "pointer" }}
+                            >
+                                {choice}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-4 d-flex justify-content-around">
+                        <button className="btn btn-primary" onClick={submitAnswer}>
+                            ثبت پاسخ
+                        </button>
+                        <button className="btn btn-danger" onClick={stopGame}>
+                            توقف بازی
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div className={stat?'d-flex justify-content-center flex-column align-items-center mt-4':'d-none'}>
-                <div style={{width: '80%',maxWidth: '550px',border: '1px solid #969696',borderRadius: "10px"}} className="p-4 d-flex justify-content-center align-items-end flex-column">
-                    <h4>{question[0]}</h4>
-                    <div onClick={()=>{setChoosen([true,false,false,false])}} className={choosen[0]?"w-100 text-end px-2 py-4 my-2 choosen_answer_question":"w-100 text-end px-2 py-4 my-2 default_answer_question"} style={{borderRadius: '10px'}}>{question[1]}</div>
-                    <div onClick={()=>{setChoosen([false,true,false,false])}} className={choosen[1]?"w-100 text-end px-2 py-4 my-2 choosen_answer_question":"w-100 text-end px-2 py-4 my-2 default_answer_question"} style={{borderRadius: '10px'}}>{question[2]}</div>
-                    <div onClick={()=>{setChoosen([false,false,true,false])}} className={choosen[2]?"w-100 text-end px-2 py-4 my-2 choosen_answer_question":"w-100 text-end px-2 py-4 my-2 default_answer_question"}style={{borderRadius: '10px'}}>{question[3]}</div>
-                    <div onClick={()=>{setChoosen([false,false,false,true])}} className={choosen[3]?"w-100 text-end px-2 py-4 my-2 choosen_answer_question":"w-100 text-end px-2 py-4 my-2 default_answer_question"} style={{borderRadius: '10px'}}>{question[4]}</div>
+            )}
 
-
+            {/* Game Results */}
+            {results && (
+                <div className="mt-4">
+                    <h4>نتایج بازی</h4>
+                    <p>{results.message || `امتیاز نهایی: ${results.finalScore || results.score}`}</p>
                 </div>
-                <div className="d-flex justify-content-start ml-5 w-75 mt-5">
-                    <button className="btn btn-primary ml-5" onClick={send_answer}>ثبت جواب</button>
-
-                </div>
-
-            </div>
+            )}
         </div>
-    )
+    );
 }
