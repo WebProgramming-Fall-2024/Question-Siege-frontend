@@ -64,3 +64,9 @@ a {
     border: 2px solid #1d47f1;
     box-shadow: 2px 2px #1660ff;
 }
+
+.table-row-hover:hover {
+    background-color: #2c2c2c;
+    transition: background-color 0.2s ease;
+}
+

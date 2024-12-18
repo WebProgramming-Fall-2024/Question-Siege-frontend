@@ -1,301 +1,237 @@
-import {Link, useLocation} from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import Modal from "react-bootstrap/Modal";
-import {useState} from "react";
-import {showToast} from "../../lib/utility";
+import { useLocation } from "react-router-dom";
+import { showToast } from "../../lib/utility";
 
-export function Question(){
-    let data = ['item1','item2','item3','item4']
-    const [modalShow, setModalShow] = useState(false);
-    const [modalShow2, setModalShow2] = useState(false);
+export function Question() {
     const location = useLocation();
     const query = new URLSearchParams(location.search);
     const category = query.get("category");
-    console.log(category)
-    // todo api for get question this user
-    return(
+
+    const [questions, setQuestions] = useState([]); // Stores fetched questions
+    const [loading, setLoading] = useState(true); // Loading state
+    const [selectedQuestion, setSelectedQuestion] = useState(null); // Selected question for modal
+    const [showAddModal, setShowAddModal] = useState(false); // Controls Add Question Modal visibility
+
+    // Fetch questions for the selected category
+    useEffect(() => {
+        const fetchQuestions = async () => {
+            try {
+                const token = localStorage.getItem("login_token");
+                const response = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/questions?category=${category}`,
+                    { headers: { Authorization: token } }
+                );
+                setQuestions(response.data);
+            } catch (error) {
+                console.error("Error fetching questions:", error);
+                showToast("خطا در دریافت سوالات. لطفا دوباره تلاش کنید.", "error");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchQuestions();
+    }, [category]);
+
+    // Handle row click
+    const handleRowClick = (question) => {
+        setSelectedQuestion(question);
+    };
+
+    return (
         <div>
-            <div className="my-4 mx-3 d-flex flex-column justify-content-between" style={{direction: 'rtl'}}>
-                <div className="collapse" id="navbarToggleExternalContent">
-                    <div className="p-4 row justify-content-around">
-                        <div className="col-md-5">
-                            <label htmlFor="category_search" className="my-2 fw-bolder">نام دسته بندی</label>
-                            <input type="text" className="form-control" id="category_search" placeholder="نام دسته بندی مورد نظر خود را وارد کنید" autoComplete="off"/>
-
-                        </div>
-                        <div className="col-md-5">
-                            <label htmlFor="category_search" className="my-2 fw-bolder">فیلتر</label>
-                            <select className="form-control">
-                                <option>انتخاب کنید</option>
-                                <option>نام</option>
-                                <option>تاریخ</option>
-
-
-                            </select>
-                        </div>
-                        <div className="mt-2 d-flex justify-content-end">
-                            <button className="btn btn-outline-primary">اعمال تغییرات</button>
-
-                        </div>
-
-                    </div>
-                </div>
-                <div className="d-flex justify-content-between">
-                    <nav className="navbar">
-                        <div className="container-fluid">
-                            <button className="btn btn-outline-primary" onClick={()=>{setModalShow2(true);}}>افزودن سوال</button>
-
-
-                        </div>
-                    </nav>
-
-                    <nav className="navbar">
-                        <div className="container-fluid">
-                            <button className="btn btn-outline-success" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
-                                جستجو
-                            </button>
-                        </div>
-                    </nav>
-                </div>
-
-            </div>
-            <div className="mx-5 text-center" style={{overflowX:'auto',direction: 'rtl'}}>
-                <table className="table table-hover" >
-                    <thead className="table-primary" >
-                    <tr>
-                        <th className="px-4" style={{whiteSpace: 'nowrap'}}>#</th>
-                        <th className="px-4" style={{whiteSpace: 'nowrap'}}>عنوان سوال</th>
-                        <th className="px-4" style={{whiteSpace: 'nowrap'}}>دسته بندی</th>
-                        <th className="px-4" style={{whiteSpace: 'nowrap'}}>تگ</th>
-                        <th className="px-4" style={{whiteSpace: 'nowrap'}}>تاریخ</th>
-                        <th className="px-4" style={{whiteSpace: 'nowrap'}}>عملیات</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {data.map((item,index) => {
-                        return(
-                            <tr>
-                            <th>{index+1}</th>
-                            <td>عید۱</td>
-                            <td>ریاضی</td>
-                            <td>ریاضی</td>
-
-                            <td>۱۳۹۷/۱۲/۱۲</td>
-                            <td>
-                                <div className="dropdown">
-                                    <button className="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i className="icon-cog6"></i>
-
-                                    </button>
-                                    <ul className="dropdown-menu">
-                                        <li><div className='dropdown-item text-center tet' onClick={()=>{setModalShow(true);show_deteial(index)}}>جزییات</div></li>
-
-                                    </ul>
-                                </div>
-                            </td>
-
-
-                        </tr>)
-
-                    })}
-
-
-
-                    </tbody>
-                </table>
-
-            </div>
-            <MyVerticallyCenteredModal
-                show={modalShow}
-                onHide={() => setModalShow(false)}
-            />
-            <MyVerticallyCenteredModal2
-                show={modalShow2}
-                onHide={() => setModalShow2(false)}
-            />
-        </div>
-    )
-}
-function MyVerticallyCenteredModal(props) {
-    return (
-        <Modal
-            {...props}
-            size="lg"
-            aria-labelledby="contained-modal-title-vcenter"
-            centered
-        >
-            <Modal.Header className="d-flex flex-row-reverse justify-content-between">
-
-                <Modal.Title id="contained-modal-title-vcenter">
-
-                    جزئیات سوال
-                </Modal.Title>
-                <button type="button" className="close btn" style={{fontSize:"16px"}} onClick={props.onHide}>×</button>
-
-            </Modal.Header>
-            <Modal.Body>
-                <div className="d-flex justify-content-center align-items-center mt-4">
-                    <div  className="p-4 w-100 d-flex justify-content-center align-items-end flex-column">
-                        <h4>رادیکال ۱6 چند می شود ؟</h4>
-                        <div className="w-100 text-end px-2 py-4 my-2" style={{border: "2px solid grey",boxShadow: "2px 2px grey",borderRadius: "10px"}}>1</div>
-                        <div className="w-100 text-end px-2 py-4 my-2" style={{border: "2px solid red",boxShadow: "2px 2px grey",borderRadius: "10px"}}>2</div>
-                        <div className="w-100 text-end px-2 py-4 my-2" style={{border: "2px solid grey",boxShadow: "2px 2px grey",borderRadius: "10px"}}>3</div>
-                        <div className="w-100 text-end px-2 py-4 my-2" style={{border: "2px solid green",boxShadow: "2px 2px grey",borderRadius: "10px"}}>4</div>
-
-
-                    </div>
-
-                </div>
-
-            </Modal.Body>
-            <Modal.Footer>
-                <button className="btn btn-outline-success" onClick={props.onHide}>بستن</button>
-            </Modal.Footer>
-        </Modal>
-    );
-}
-function MyVerticallyCenteredModal2(props) {
-    const [tags, settags] = useState([]);
-    function add_tag(){
-        let a = document.getElementById('add_tag').value
-        if (a.trim().length == 0){
-            showToast('تگ را وارد کنید')
-            return
-        }
-        settags([...tags,a])
-    }
-    return (
-        <Modal
-            {...props}
-            size="lg"
-            aria-labelledby="contained-modal-title-vcenter"
-            centered
-        >
-            <Modal.Header className="d-flex flex-row-reverse justify-content-between">
-
-                <Modal.Title id="contained-modal-title-vcenter">
-
+            {/* Page Header */}
+            <div className="my-4 mx-3 d-flex flex-row-reverse justify-content-between" style={{ direction: "rtl" }}>
+                <h4>سوالات دسته بندی: {category}</h4>
+                <button className="btn btn-outline-primary" onClick={() => setShowAddModal(true)}>
                     افزودن سوال
-                </Modal.Title>
-                <button type="button" className="close btn" style={{fontSize:"16px"}} onClick={props.onHide}>×</button>
+                </button>
+            </div>
 
-            </Modal.Header>
-            <Modal.Body>
-                <div className="row" style={{direction: "rtl",textAlign: "right"}} >
-                    <div className="col-lg-12">
-                        <div className="form-group">
-                            <label className="font-weight-bold">عنوان سوال<span className="text-danger"> *
-										</span></label>
-                            <div className="input-group mb-2 mr-sm-2">
+            {/* Questions Table */}
+            <div className="mx-5 text-center" style={{ overflowX: "auto", direction: "rtl" }}>
+                {loading ? (
+                    <div>در حال بارگذاری...</div>
+                ) : (
+                    <table className="table table-hover">
+                        <thead className="table-primary">
+                        <tr>
+                            <th>#</th>
+                            <th>متن سوال</th>
+                            <th>سطح دشواری</th>
+                            <th>پاسخ صحیح</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {questions.map((question, index) => (
+                            <tr
+                                key={question.id}
+                                onClick={() => handleRowClick(question)}
+                                style={{ cursor: "pointer" }}
+                                className="table-row-hover"
+                            >
+                                <th>{index + 1}</th>
+                                <td>{question.text}</td>
+                                <td>{translateDifficulty(question.difficulty)}</td>
+                                <td>{question.correctAnswer}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
 
-                                <input type="text" className="form-control"
-                                       placeholder="عنوان سوال" autoComplete="off" />
-
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-lg-6">
-                        <div className="form-group">
-                            <label className="font-weight-bold">سطح سوال<span className="text-danger"> *
-										</span></label>
-                            <div className="input-group mb-2 mr-sm-2">
-
-                                <select className="form-select" aria-label="Default select example">
-                                    <option selected>انتخاب کنید</option>
-                                    <option value="easy">آسان</option>
-                                    <option value="medium">متوسط</option>
-                                    <option value="hard">سخت</option>
-
-                                </select>
-
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-lg-12">
-                        <div className="form-group">
-                            <label className="font-weight-bold">متن سوال<span className="text-danger"> *
-										</span></label>
-                            <div className="input-group mb-2 mr-sm-2">
-                                <textarea className="form-control" placeholder="متن سوال خود را وارد کنید" rows="3"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-lg-12">
-                        <div className="form-group">
-                            <label className="font-weight-bold">جواب درست<span className="text-danger"> *
-										</span></label>
-                            <div className="input-group mb-2 mr-sm-2">
-                                <textarea className="form-control" placeholder="جواب درست سوال خود را وارد کنید" rows="2"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-lg-12">
-                        <div className="form-group">
-                            <label className="font-weight-bold">جواب غلط ۱<span className="text-danger"> *
-										</span></label>
-                            <div className="input-group mb-2 mr-sm-2">
-                                <textarea className="form-control" placeholder="جواب غلط ۱ سوال خود را وارد کنید" rows="1"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-lg-12">
-                        <div className="form-group">
-                            <label className="font-weight-bold">جواب غلط ۲<span className="text-danger"> *
-										</span></label>
-                            <div className="input-group mb-2 mr-sm-2">
-                                <textarea className="form-control" placeholder="جواب غلط ۲ سوال خود را وارد کنید" rows="1"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-lg-12">
-                        <div className="form-group">
-                            <label className="font-weight-bold">جواب غلط ۳<span className="text-danger"> *
-										</span></label>
-                            <div className="input-group mb-2 mr-sm-2">
-                                <textarea className="form-control" placeholder="جواب غلط ۳ سوال خود را وارد کنید" rows="1"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-lg-12 d-none">
-                        <div className="row align-items-end">
-                            <div className="form-group col-9">
-                                <label className="font-weight-bold">تگ<span className="text-danger"> *
-										</span></label>
-                                <div className="input-group mb-2 mr-sm-2">
-                                    <input className="form-control" placeholder="تگ جدید را وارد کنید" type="text" id="add_tag" />
+            {/* Question Details Modal */}
+            {selectedQuestion && (
+                <Modal show={!!selectedQuestion} onHide={() => setSelectedQuestion(null)} size="md" centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title>جزئیات سوال</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <h5>{selectedQuestion.text}</h5>
+                        <div className="mt-3">
+                            {selectedQuestion.options.map((option, index) => (
+                                <div
+                                    key={index}
+                                    className={`p-2 my-2 rounded ${
+                                        option === selectedQuestion.correctAnswer
+                                            ? "border border-success text-success"
+                                            : "border border-secondary"
+                                    }`}
+                                >
+                                    {option}
                                 </div>
-                            </div>
-                            <div className="col-3">
-                                <button type="button" className="btn btn-primary mb-2 px-3" onClick={add_tag}>افزودن</button>
-                            </div>
+                            ))}
                         </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <button className="btn btn-outline-success" onClick={() => setSelectedQuestion(null)}>
+                            بستن
+                        </button>
+                    </Modal.Footer>
+                </Modal>
+            )}
 
-                    </div>
-                    <div className="col-12 row d-none">
-                        {tags.map((item,index) => {
-                            return( <div className="col-3 my-1 mx-1 py-2 text-center" style={{border: "1px solid #c5c5c5",borderRadius: "10px"}}>{item}</div>
-                            )
-
-                        })}
-                    </div>
-
-
-
-                </div>
-
-            </Modal.Body>
-            <Modal.Footer>
-                <button className="btn btn-outline-danger" onClick={props.onHide}>بستن</button>
-                <button type="button"
-                        className="btn btn-success" onClick={add_question}>افزودن</button>
-            </Modal.Footer>
-        </Modal>
+            {/* Add Question Modal */}
+            {showAddModal && (
+                <Modal show={showAddModal} onHide={() => setShowAddModal(false)} size="md" centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title>افزودن سوال</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <AddQuestionForm
+                            category={category}
+                            onClose={() => setShowAddModal(false)}
+                            setQuestions={setQuestions}
+                        />
+                    </Modal.Body>
+                </Modal>
+            )}
+        </div>
     );
-
 }
 
-function add_question(){
-//todo api for add question
+// Add Question Form Component
+function AddQuestionForm({ category, onClose, setQuestions }) {
+    const [title, setTitle] = useState("");
+    const [difficulty, setDifficulty] = useState("");
+    const [correctAnswer, setCorrectAnswer] = useState("");
+    const [wrong1, setWrong1] = useState("");
+    const [wrong2, setWrong2] = useState("");
+    const [wrong3, setWrong3] = useState("");
+
+    const handleSubmit = async () => {
+        if (!title || !difficulty || !correctAnswer || !wrong1 || !wrong2 || !wrong3) {
+            showToast("لطفا تمام فیلدهای الزامی را پر کنید.", "error");
+            return;
+        }
+
+        const token = localStorage.getItem("login_token");
+        const payload = {
+            title,
+            difficulty,
+            correctAnswer,
+            options: [correctAnswer, wrong1, wrong2, wrong3],
+            category,
+        };
+
+        try {
+            await axios.post(`${process.env.REACT_APP_API_URL}/questions/create`, payload, {
+                headers: { Authorization: token },
+            });
+
+            showToast("سوال با موفقیت اضافه شد.", "success");
+
+            // Fetch updated questions
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/questions?category=${category}`,
+                { headers: { Authorization: token } }
+            );
+            setQuestions(response.data);
+
+            onClose(); // Close the modal
+        } catch (error) {
+            console.error("Error creating question:", error);
+            showToast("خطا در ایجاد سوال. لطفا دوباره تلاش کنید.", "error");
+        }
+    };
+
+    return (
+        <div style={{ direction: "rtl" }}>
+            <div className="form-group my-2">
+                <label>عنوان سوال *</label>
+                <input className="form-control" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+            <div className="form-group my-2">
+                <label>سطح سوال *</label>
+                <select className="form-control" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+                    <option value="">انتخاب کنید</option>
+                    <option value="easy">آسان</option>
+                    <option value="medium">متوسط</option>
+                    <option value="hard">سخت</option>
+                </select>
+            </div>
+            <div className="form-group my-2">
+                <label>جواب درست *</label>
+                <input className="form-control" value={correctAnswer} onChange={(e) => setCorrectAnswer(e.target.value)} />
+            </div>
+            <div className="form-group my-2">
+                <label>جواب غلط ۱ *</label>
+                <input className="form-control" value={wrong1} onChange={(e) => setWrong1(e.target.value)} />
+            </div>
+            <div className="form-group my-2">
+                <label>جواب غلط ۲ *</label>
+                <input className="form-control" value={wrong2} onChange={(e) => setWrong2(e.target.value)} />
+            </div>
+            <div className="form-group my-2">
+                <label>جواب غلط ۳ *</label>
+                <input className="form-control" value={wrong3} onChange={(e) => setWrong3(e.target.value)} />
+            </div>
+            <div className="d-flex justify-content-end">
+                <button className="btn btn-outline-danger mx-2" onClick={onClose}>
+                    بستن
+                </button>
+                <button className="btn btn-success" onClick={handleSubmit}>
+                    افزودن
+                </button>
+            </div>
+        </div>
+    );
 }
-function show_deteial(index){
-    console.log(index)
+
+
+// Translate difficulty levels to Persian
+function translateDifficulty(level) {
+    switch (level) {
+        case "easy":
+            return "آسان";
+        case "medium":
+            return "متوسط";
+        case "hard":
+            return "سخت";
+        default:
+            return "نامشخص";
+    }
 }
