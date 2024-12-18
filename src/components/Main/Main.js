@@ -9,6 +9,7 @@ import {Game} from "../game/game";
 import {Point} from "../point/point";
 import {Profile} from "../profile/profile";
 import {User} from "../user/user";
+import {Followings} from "../Followings";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { useTasks, useTasksDispatch } from '../TaskContext/TasksContext';
 export function Main(){
@@ -23,7 +24,7 @@ export function Main(){
                         <Route path="/" element={<Home/>} />
                         <Route path="/category" element={<Category/>} />
                         <Route path="/point" element={<Point/>} />
-
+                        <Route path="/followings" element={<Followings/>} />
                         <Route path="/question" element={<Question/>} />
                         <Route path="/game" element={<Game/>} />
                         <Route path="/profile" element={<Profile/>} />

@@ -119,7 +119,7 @@ export function Header() {
                 >
                     <ul
                         className="navbar-nav ms-auto text-end pe-0 pe-lg-3 my-2 my-lg-0 text-dark"
-                        style={{ direction: "rtl" }}
+                        style={{direction: "rtl"}}
                     >
                         <li className="nav-item">
                             <div className="nav-link active" aria-current="page">
@@ -134,6 +134,11 @@ export function Header() {
                         <li className="nav-item">
                             <div className="nav-link active" aria-current="page">
                                 <Link to="/user">کاربران</Link>
+                            </div>
+                        </li>
+                        <li className="nav-item">
+                            <div className="nav-link active" aria-current="page">
+                                <Link to="/followings">دنبال شدگان</Link>
                             </div>
                         </li>
                     </ul>
