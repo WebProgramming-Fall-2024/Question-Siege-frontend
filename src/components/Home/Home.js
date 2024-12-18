@@ -92,7 +92,7 @@ export function Home() {
 
             {/* Last Games Table */}
             <div className="mx-5" style={{ overflowX: "auto", direction: "rtl" }}>
-                <h5>10 تا از آخرین بازی های انجام شده</h5>
+                <h5>10 تا از آخرین سوال های حل شده</h5>
                 <table className="table table-hover text-center mt-2">
                     <thead className="table-primary">
                     <tr>

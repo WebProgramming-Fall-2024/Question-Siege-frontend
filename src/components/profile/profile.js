@@ -93,7 +93,7 @@ export function Profile() {
             {/* Games Section */}
             <div style={{ border: "1px solid black", borderRadius: "12px" }} className="mx-4">
                 <div className="mx-5 my-2" style={{ overflowX: "auto", direction: "rtl" }}>
-                    <h1 style={{ textShadow: "1px 1px grey" }}>بازی ها</h1>
+                    <h1 style={{ textShadow: "1px 1px grey" }}>سوال های حل شده</h1>
                     <table className="table table-hover text-center mt-2">
                         <thead className="table-primary">
                         <tr>
